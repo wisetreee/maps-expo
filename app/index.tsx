@@ -26,26 +26,25 @@ export default function App() {
     latitudeDelta: 2,
     longitudeDelta: 2,
   };
-
-   useEffect(() => {
-    console.log("Updated Marker JSON:", searchParams.get('updatedMarker'));
-    const updatedMarkerJson = searchParams.get('updatedMarker');
-    if (updatedMarkerJson) {
-      try {
-        const updatedMarker = JSON.parse(updatedMarkerJson);
-        setMarkers((prevMarkers) =>
-            prevMarkers.map((m) =>
-                m.id === updatedMarker.id ? { ...m, ...updatedMarker } : m
-            )
-        );
-    } catch (error) {
-        console.error("Failed to parse updatedMarker:", error);
-    }
   
-      // Убираем параметр из URL
-      router.replace("/");
-    }
-   }, [searchParams]);
+  useEffect(() => {
+    const updatedMarkerJson = searchParams.get("updatedMarker"); 
+    if (updatedMarkerJson) {
+      try {      
+        const updatedMarker = JSON.parse(updatedMarkerJson);
+        
+        setMarkers((prevMarkers) =>
+          prevMarkers.map((m) =>
+            m.id === String(updatedMarker.id)
+              ? { ...m, images: updatedMarker.images }
+              : m
+          )
+        );
+      } catch (error) {
+        console.error("Failed to parse updatedMarker:", error);
+      }
+    } 
+  }, [searchParams.get("updatedMarker")]);
 
   const handleLongPress = (e: any) => {
     const newMarker: MarkerData = {
@@ -69,7 +68,6 @@ const handleMarkerPress = (id: string) => {
     });
   }
 };
-
 
   return (
     <View style={styles.container}>
