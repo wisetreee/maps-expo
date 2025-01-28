@@ -17,25 +17,36 @@ export default function MarkerPage() {
 
     const handleAddImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
+            allowsMultipleSelection: true,
         });
 
         if (!result.canceled) {
-          const assetUri = result.assets[0].uri;
-          const fileName = assetUri.split("/").pop(); // Имя файла
-          const newUri = `${FileSystem.cacheDirectory}${fileName}`; // Постоянный путь
-      
           try {
-            await FileSystem.moveAsync({
-              from: assetUri,
-              to: newUri,
-            });
+            const newUris = await Promise.all( 
+            // URI, полученные от ImagePicker, не читаются при перезаходе,
+            // поэтому используем хранилище изображений, куда добавляем изображения по их URI
+              result.assets.map(async (asset) => {
+                const assetUri = asset.uri;
+                const fileName = assetUri.split("/").pop(); 
+                const newUri = `${FileSystem.cacheDirectory}${fileName}`; 
       
-            setLocalImages((prev) => [...prev, newUri]);
+                // Перемещаем файл в хранилище
+                await FileSystem.moveAsync({
+                  from: assetUri,
+                  to: newUri,
+                });
+
+                return newUri; 
+              })
+            );
+      
+            // Обновляем состояние с добавлением всех новых URI
+            setLocalImages((prev) => [...prev, ...newUris]);
+    
           } catch (error) {
-            console.error("Failed to move file:", error);
+            console.error("Failed to move files:", error);
           }
         }
       };
@@ -68,8 +79,10 @@ export default function MarkerPage() {
             </View>
           )}
         /> 
-        <Button title="Add Image" onPress={handleAddImage} />
-        <Button title="Save" onPress={handleSave} />
+        <View style={styles.buttonContainer}>
+        <Button title="Добавить изображения" onPress={handleAddImage} />
+        <Button title="Сохранить изображения" onPress={handleSave} />
+        </View>
       </View>
     );
   }
@@ -81,18 +94,16 @@ export default function MarkerPage() {
       alignItems: "center",
     },
     imageContainer: {
-      margin: 5,
+      margin: 2,
       aspectRatio: 1, // Квадратные изображения
-      borderRadius: 10,
-    },
-    image: {
+      gap: 5,
       width: 100,
       height: 100,
     },
-    button: {
-      marginBottom: 5,
-      fontSize: 20,
-      textDecorationLine: "underline",
-      color: "#fff",
+    image: {
+      flex: 1,
+    },
+    buttonContainer: {
+      gap: 5,
     },
   });

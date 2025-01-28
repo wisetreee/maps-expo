@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import MapView, { PROVIDER_GOOGLE, Marker} from 'react-native-maps';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { RelativePathString, useRouter } from 'expo-router';
 import { useSearchParams } from 'expo-router/build/hooks';
 
@@ -71,23 +71,25 @@ const handleMarkerPress = (id: string) => {
 
   return (
     <View style={styles.container}>
+      <Text>Удерживайте для добавления маркера на карту.</Text>
+      <Text>Нажмите на маркер, чтобы открыть окно маркера.</Text>
       <MapView
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={INITIAL_REGION}
         onLongPress={handleLongPress}
-      >
+      >      
         {markers.map((marker, index) => (
             <Marker
             key={marker.id}
             coordinate={marker}
             title={`Marker ${index + 1}`}
-            description={`Latitude: ${marker.latitude}, Longitude: ${marker.longitude}`}
             onPress={() => handleMarkerPress(marker.id)}           
           />       
         ))}
       </MapView>
     </View>
+    
   );
 }
 
@@ -99,4 +101,5 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+
 });
